@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atelier des cœurs</title>
+<style>
+:root{
+  --bg:#fbf3f1; --surface:#ffffff; --ink:#2a1f2d; --muted:#7b6b7e;
+  --accent:#c2185b; --accent-ink:#ffffff; --line:#ecd9de; --mine:#c2185b; --theirs:#f3e4e8;
+}
+*{box-sizing:border-box;margin:0}
+body{font-family:Georgia,"Times New Roman",serif;background:var(--bg);color:var(--ink);min-height:100vh;line-height:1.5}
+button,input,textarea{font:inherit}
+.hidden{display:none!important}
+:focus-visible{outline:3px solid #1a73e8;outline-offset:2px}
+
+/* Accueil / formulaires */
+.auth{min-height:100vh;display:grid;grid-template-columns:1fr 1fr}
+.auth-hero{background:var(--accent);color:#fff;padding:3rem;display:flex;flex-direction:column;justify-content:flex-end}
+.auth-hero h1{font-size:clamp(2.4rem,6vw,4.2rem);line-height:1.05;font-weight:400}
+.auth-hero p{margin-top:1rem;max-width:30ch;opacity:.9}
+.auth-box{display:flex;align-items:center;justify-content:center;padding:2rem}
+form.card{width:100%;max-width:380px}
+.card h2{font-size:1.7rem;font-weight:400;margin-bottom:1.2rem}
+label{display:block;font-family:system-ui,sans-serif;font-size:.9rem;margin:1rem 0 .3rem}
+input,textarea{width:100%;padding:.75rem .9rem;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink)}
+.btn{width:100%;margin-top:1.4rem;padding:.85rem;border:0;border-radius:10px;background:var(--accent);color:var(--accent-ink);cursor:pointer;font-family:system-ui,sans-serif;font-weight:600}
+.btn:hover{filter:brightness(1.08)}
+.link{background:none;border:0;color:var(--accent);cursor:pointer;text-decoration:underline;padding:0}
+.switch{margin-top:1.2rem;font-family:system-ui,sans-serif;font-size:.9rem;color:var(--muted)}
+.error{color:#b00020;font-family:system-ui,sans-serif;font-size:.88rem;margin-top:.8rem;min-height:1.2em}
+
+/* Application */
+.app{display:grid;grid-template-columns:320px 1fr;height:100vh}
+.side{background:var(--surface);border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0}
+.side-head{padding:1rem 1.2rem;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+.side-head strong{font-weight:400;font-size:1.25rem}
+.side-head .link{font-family:system-ui,sans-serif;font-size:.85rem}
+.list{overflow:auto;flex:1}
+.person{display:flex;gap:.8rem;align-items:center;width:100%;padding:.9rem 1.2rem;border:0;background:none;text-align:left;cursor:pointer;border-bottom:1px solid var(--line)}
+.person:hover,.person.active{background:var(--theirs)}
+.avatar{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:700;font-family:system-ui,sans-serif;flex:none}
+.person small{display:block;color:var(--muted);font-family:system-ui,sans-serif}
+.chat{display:flex;flex-direction:column;min-height:0}
+.chat-head{padding:1rem 1.4rem;border-bottom:1px solid var(--line);background:var(--surface);display:flex;gap:.8rem;align-items:center}
+.back{display:none}
+.msgs{flex:1;overflow:auto;padding:1.4rem;display:flex;flex-direction:column;gap:.6rem}
+.msg{max-width:min(70%,460px);padding:.6rem .9rem;border-radius:16px;font-family:system-ui,sans-serif;font-size:.95rem;word-wrap:break-word}
+.msg.mine{align-self:flex-end;background:var(--mine);color:#fff;border-bottom-right-radius:4px}
+.msg.theirs{align-self:flex-start;background:var(--theirs);border-bottom-left-radius:4px}
+.empty{margin:auto;color:var(--muted);text-align:center;max-width:28ch}
+.composer{display:flex;gap:.6rem;padding:1rem;border-top:1px solid var(--line);background:var(--surface)}
+.composer input{flex:1}
+.composer .btn{width:auto;margin:0;padding:.75rem 1.3rem}
+
+@media(max-width:760px){
+  .auth{grid-template-columns:1fr}
+  .auth-hero{padding:2rem 1.5rem}
+  .app{grid-template-columns:1fr}
+  .app .chat{display:none}
+  .app.in-chat .side{display:none}
+  .app.in-chat .chat{display:flex}
+  .back{display:inline-block}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<!-- ÉCRAN INSCRIPTION / CONNEXION -->
+<main id="auth" class="auth">
+  <section class="auth-hero">
+    <h1>Une vraie conversation commence ici.</h1>
+    <p>Créez votre profil, choisissez une personne, écrivez-lui.</p>
+  </section>
+  <section class="auth-box">
+    <form id="form" class="card" novalidate>
+      <h2 id="title">Créer un compte</h2>
+      <div id="nameRow">
+        <label for="name">Prénom</label>
+        <input id="name" type="text" autocomplete="given-name">
+      </div>
+      <label for="email">Email</label>
+      <input id="email" type="email" autocomplete="email" required>
+      <label for="pass">Mot de passe (8 caractères minimum)</label>
+      <input id="pass" type="password" autocomplete="new-password" required>
+      <p id="err" class="error" role="alert"></p>
+      <button class="btn" id="submit" type="submit">Créer mon compte</button>
+      <p class="switch"><span id="switchText">Déjà inscrit ?</span> <button type="button" class="link" id="switchBtn">Se connecter</button></p>
+    </form>
+  </section>
+</main>
+
+<!-- ÉCRAN CHAT -->
+<div id="app" class="app hidden">
+  <aside class="side">
+    <div class="side-head">
+      <strong id="me"></strong>
+      <button class="link" id="logout">Se déconnecter</button>
+    </div>
+    <div class="list" id="list"></div>
+  </aside>
+  <section class="chat">
+    <div class="chat-head">
+      <button class="link back" id="back">Retour</button>
+      <div class="avatar" id="hAvatar"></div>
+      <strong id="hName">Choisissez une personne</strong>
+    </div>
+    <div class="msgs" id="msgs"><p class="empty">Sélectionnez un profil dans la liste pour commencer à discuter.</p></div>
+    <form class="composer hidden" id="composer">
+      <input id="text" type="text" placeholder="Écrire un message" aria-label="Message" autocomplete="off">
+      <button class="btn" type="submit">Envoyer</button>
+    </form>
+  </section>
+</div>
+
+<script>
+/*
+  DÉMO FRONT-END : les comptes et messages sont stockés dans le navigateur (localStorage).
+  Pour un vrai site, remplacez les fonctions load()/save() par des appels à un serveur
+  (API + base de données, mots de passe hachés avec bcrypt/argon2, WebSocket pour le chat).
+*/
+const $ = id => document.getElementById(id);
+const load = (k, d) => { try { return JSON.parse(localStorage.getItem(k)) ?? d } catch { return d } };
+const save = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)) } catch {} };
+
+const PROFILES = [
+  {id:"p1", name:"Camille", color:"#c2185b", replies:["Salut ! Ravie de te rencontrer.","Tu aimes quoi comme sorties ?","Moi, j’adore les marchés le dimanche."]},
+  {id:"p2", name:"Léo", color:"#00695c", replies:["Hey ! Comment se passe ta journée ?","Je cuisine un risotto ce soir.","Tu préfères la mer ou la montagne ?"]},
+  {id:"p3", name:"Inès", color:"#5e35b1", replies:["Coucou ! Belle photo de profil.","Je cherche quelqu’un pour aller au cinéma.","Raconte-moi un voyage qui t’a marqué."]},
+  {id:"p4", name:"Hugo", color:"#ef6c00", replies:["Salut, enchanté !","Tu fais du sport ?","On pourrait se retrouver autour d’un café."]}
+];
+
+let mode = "signup", user = null, current = null;
+
+async function hash(s){
+  const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s));
+  return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2,"0")).join("");
+}
+
+function setMode(m){
+  mode = m;
+  const su = m === "signup";
+  $("title").textContent = su ? "Créer un compte" : "Se connecter";
+  $("submit").textContent = su ? "Créer mon compte" : "Me connecter";
+  $("switchText").textContent = su ? "Déjà inscrit ?" : "Pas encore de compte ?";
+  $("switchBtn").textContent = su ? "Se connecter" : "Créer un compte";
+  $("nameRow").classList.toggle("hidden", !su);
+  $("pass").autocomplete = su ? "new-password" : "current-password";
+  $("err").textContent = "";
+}
+$("switchBtn").onclick = () => setMode(mode === "signup" ? "login" : "signup");
+
+$("form").addEventListener("submit", async e => {
+  e.preventDefault();
+  const email = $("email").value.trim().toLowerCase();
+  const pass = $("pass").value;
+  const name = $("name").value.trim();
+  const users = load("users", {});
+  if(!/^\S+@\S+\.\S+$/.test(email)) return $("err").textContent = "Entrez une adresse email valide.";
+  if(pass.length < 8) return $("err").textContent = "Le mot de passe doit contenir au moins 8 caractères.";
+  const h = await hash(pass);
+  if(mode === "signup"){
+    if(!name) return $("err").textContent = "Indiquez votre prénom.";
+    if(users[email]) return $("err").textContent = "Cet email est déjà utilisé. Connectez-vous.";
+    users[email] = {name, hash:h};
+    save("users", users);
+  } else {
+    if(!users[email] || users[email].hash !== h) return $("err").textContent = "Email ou mot de passe incorrect.";
+  }
+  save("session", email);
+  start(email);
+});
+
+function start(email){
+  const u = load("users", {})[email];
+  if(!u) return;
+  user = {email, name:u.name};
+  $("auth").classList.add("hidden");
+  $("app").classList.remove("hidden");
+  $("me").textContent = u.name;
+  renderList();
+}
+
+$("logout").onclick = () => {
+  try { localStorage.removeItem("session") } catch {}
+  location.reload();
+};
+
+function renderList(){
+  $("list").innerHTML = "";
+  PROFILES.forEach(p => {
+    const b = document.createElement("button");
+    b.className = "person" + (current?.id === p.id ? " active" : "");
+    const last = (load("chat:" + user.email + ":" + p.id, [])).slice(-1)[0];
+    b.innerHTML = `<span class="avatar" style="background:${p.color}">${p.name[0]}</span><span><strong>${p.name}</strong><small></small></span>`;
+    b.querySelector("small").textContent = last ? last.text.slice(0,36) : "Dire bonjour";
+    b.onclick = () => openChat(p);
+    $("list").appendChild(b);
+  });
+}
+
+function openChat(p){
+  current = p;
+  $("hName").textContent = p.name;
+  $("hAvatar").textContent = p.name[0];
+  $("hAvatar").style.background = p.color;
+  $("composer").classList.remove("hidden");
+  $("app").classList.add("in-chat");
+  renderMsgs(); renderList();
+  $("text").focus();
+}
+$("back").onclick = () => $("app").classList.remove("in-chat");
+
+function renderMsgs(){
+  const box = $("msgs");
+  const msgs = load("chat:" + user.email + ":" + current.id, []);
+  box.innerHTML = "";
+  if(!msgs.length){
+    const p = document.createElement("p");
+    p.className = "empty";
+    p.textContent = "Aucun message. Envoyez le premier.";
+    box.appendChild(p);
+  }
+  msgs.forEach(m => {
+    const d = document.createElement("div");
+    d.className = "msg " + (m.from === "me" ? "mine" : "theirs");
+    d.textContent = m.text;
+    box.appendChild(d);
+  });
+  box.scrollTop = box.scrollHeight;
+}
+
+function push(p, from, text){
+  const key = "chat:" + user.email + ":" + p.id;
+  const msgs = load(key, []);
+  msgs.push({from, text, t:Date.now()});
+  save(key, msgs);
+  if(current?.id === p.id) renderMsgs();
+  renderList();
+}
+
+$("composer").addEventListener("submit", e => {
+  e.preventDefault();
+  const text = $("text").value.trim();
+  if(!text || !current) return;
+  $("text").value = "";
+  const p = current;
+  push(p, "me", text);
+  // Réponse simulée (à remplacer par de vrais messages via WebSocket)
+  setTimeout(() => push(p, "them", p.replies[Math.floor(Math.random()*p.replies.length)]), 1200);
+});
+
+setMode("signup");
+const s = load("session", null);
+if(s) start(s);
+</script>
+</body>
+</html>
